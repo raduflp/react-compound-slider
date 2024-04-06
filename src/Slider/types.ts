@@ -3,6 +3,18 @@ import { LinearScale } from '../scales/LinearScale';
 import { DiscreteScale } from '../scales/DiscreteScale';
 import { HandleItem, CustomMode } from '../types';
 
+export type SliderChangeMeta = {
+  source:
+    | 'derived-from-props'
+    | 'mouse-move'
+    | 'mouse-up'
+    | 'touch-move'
+    | 'touch-end'
+    | 'rail-click'
+    | 'key-down'
+    | 'unknown';
+};
+
 export interface SliderProps {
   /**
    * String component used for slider root. Defaults to 'div'.
@@ -54,11 +66,17 @@ export interface SliderProps {
   /**
    * Function triggered when the value of the slider has changed. This will recieve changes at the end of a slide as well as changes from clicks on rails and tracks. Receives values.
    */
-  onChange?: (values: ReadonlyArray<number>) => void;
+  onChange?: (
+    values: ReadonlyArray<number>,
+    meta: Readonly<SliderChangeMeta>
+  ) => void;
   /**
    * Function called with the values at each update (caution: high-volume updates when dragging). Receives values.
    */
-  onUpdate?: (values: ReadonlyArray<number>) => void;
+  onUpdate?: (
+    values: ReadonlyArray<number>,
+    meta: Readonly<SliderChangeMeta>
+  ) => void;
   /**
    * Function triggered with ontouchstart or onmousedown on a handle. Receives values.
    */

@@ -16,7 +16,7 @@ import { Tracks } from '../Tracks';
 import { LinearScale } from '../scales/LinearScale';
 import { DiscreteScale } from '../scales/DiscreteScale';
 
-import { SliderProps, SliderState } from './types';
+import { SliderChangeMeta, SliderProps, SliderState } from './types';
 import { HandleItem } from '../types';
 
 const isBrowser =
@@ -154,8 +154,14 @@ export class Slider<
       );
 
       if (changes || values === undefined || values === prevState.values) {
-        onUpdate(handles.map((d) => d.val));
-        onChange(handles.map((d) => d.val));
+        onUpdate(
+          handles.map((d) => d.val),
+          { source: 'derived-from-props' }
+        );
+        onChange(
+          handles.map((d) => d.val),
+          { source: 'derived-from-props' }
+        );
       }
 
       nextState.step = step;
@@ -172,8 +178,14 @@ export class Slider<
       );
 
       if (changes) {
-        onUpdate(handles.map((d) => d.val));
-        onChange(handles.map((d) => d.val));
+        onUpdate(
+          handles.map((d) => d.val),
+          { source: 'derived-from-props' }
+        );
+        onChange(
+          handles.map((d) => d.val),
+          { source: 'derived-from-props' }
+        );
       }
 
       nextState.values = values;
@@ -254,7 +266,9 @@ export class Slider<
       v.key === handleID ? { key: v.key, val: newVal } : v
     );
 
-    this.submitUpdate(nextHandles, true);
+    this.submitUpdate(nextHandles, true, {
+      source: 'key-down',
+    });
   };
 
   onMouseDown = (e: MouseEvent, handleID: string) => {
@@ -344,7 +358,7 @@ export class Slider<
 
     // submit the candidate values
     this.setState({ activeHandleID: updateKey }, () => {
-      this.submitUpdate(nextHandles, true);
+      this.submitUpdate(nextHandles, true, { source: 'rail-click' });
       isTouch ? this.addTouchEvents() : this.addMouseEvents();
     });
   }
@@ -411,7 +425,7 @@ export class Slider<
     );
 
     // submit the candidate values
-    this.submitUpdate(nextHandles);
+    this.submitUpdate(nextHandles, false, { source: 'mouse-move' });
   };
 
   onTouchMove = (e: TouchEvent) => {
@@ -440,10 +454,14 @@ export class Slider<
     );
 
     // submit the candidate values
-    this.submitUpdate(nextHandles);
+    this.submitUpdate(nextHandles, false, { source: 'touch-move' });
   };
 
-  submitUpdate(next: HandleItem[], callOnChange = false) {
+  submitUpdate(
+    next: HandleItem[],
+    callOnChange = false,
+    meta: SliderChangeMeta = { source: 'unknown' }
+  ) {
     const {
       mode = 1,
       step = 0.1,
@@ -481,10 +499,16 @@ export class Slider<
         }
       }
 
-      onUpdate(handles.map((d) => d.val));
+      onUpdate(
+        handles.map((d) => d.val),
+        meta
+      );
 
       if (callOnChange) {
-        onChange(handles.map((d) => d.val));
+        onChange(
+          handles.map((d) => d.val),
+          meta
+        );
       }
 
       return { handles };
@@ -497,7 +521,10 @@ export class Slider<
       props: { onChange = noop, onSlideEnd = noop },
     } = this;
 
-    onChange(handles.map((d) => d.val));
+    onChange(
+      handles.map((d) => d.val),
+      { source: 'mouse-up' }
+    );
     onSlideEnd(
       handles.map((d) => d.val),
       { activeHandleID }
@@ -517,7 +544,10 @@ export class Slider<
       props: { onChange = noop, onSlideEnd = noop },
     } = this;
 
-    onChange(handles.map((d) => d.val));
+    onChange(
+      handles.map((d) => d.val),
+      { source: 'touch-end' }
+    );
     onSlideEnd(
       handles.map((d) => d.val),
       { activeHandleID }
